@@ -9,6 +9,10 @@ app.use(cors());
 app.use(express.json());
 app.use("/api", productRoutes);
 
+app.get("/", (req, res) => {
+  res.send("Catalog service is running");
+});
+
 const PORT = process.env.PORT || 8000;
 
 AppDataSource.initialize()

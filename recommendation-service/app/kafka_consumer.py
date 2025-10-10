@@ -20,7 +20,7 @@ async def consume_order_events():
 
     consumer = AIOKafkaConsumer(
         topic,
-        bootstrap_servers=bootstrap,
+        bootstrap_servers=os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092"),
         value_deserializer=lambda v: json.loads(v.decode("utf-8")),
         group_id="recommendation-group",
         enable_auto_commit=True,
