@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getProducts } from "../api/catalogApi";
 import type { Product } from "../types/Product";
+import { useCart } from "../context/CartContext";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { addItem } = useCart();
 
   useEffect(() => {
     (async () => {
@@ -86,6 +88,9 @@ const ProductsPage = () => {
                 </p>
               </div>
             </Link>
+            <button onClick={() => addItem({ product_id: p.product_id })}>
+              Add to Cart
+            </button>
           </article>
         ))}
       </div>

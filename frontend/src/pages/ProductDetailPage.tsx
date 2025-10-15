@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Product } from "../types/Product";
+import { useCart } from "../context/CartContext";
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
+  const { addItem } = useCart();
 
   useEffect(() => {
     if (!id) return;
@@ -45,6 +47,9 @@ const ProductDetailPage = () => {
           }}
         />
       )}
+      <button onClick={() => addItem({ product_id: product.product_id })}>
+        Add to Cart
+      </button>
       <p>
         <strong>Brand:</strong> {product.brand}
       </p>
