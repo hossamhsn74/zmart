@@ -3,29 +3,29 @@ import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn("uuid")
-  product_id: string;
+  product_id!: string;
 
   @Column()
-  title: string;
+  title!: string;
 
   @Column()
-  brand: string;
+  brand!: string;
 
   @Column()
-  category: string;
+  category!: string;
 
   @Column("decimal", { precision: 10, scale: 2 })
-  price: number;
+  price!: number;
 
   @Column("text", { array: true, default: [] })
-  tags: string[];
+  tags!: string[];
 
   @Column()
-  image_url: string;
+  image_url!: string;
 
   @Column("int")
-  stock: number;
+  stock!: number;
 
   @Column("jsonb", { nullable: true })
-  attributes: Record<string, any>;
+  attributes!: Record<string, any>;
 }
