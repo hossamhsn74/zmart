@@ -1,10 +1,5 @@
 import api from "./axiosClient";
 
-interface AddToCartPayload {
-  product_id: string;
-  qty: number;
-}
-
 export const getCart = async (params: {
   user_id?: string;
   session_id?: string;

@@ -1,4 +1,11 @@
-import { useEffect } from "react";
+import {
+  useEffect,
+  type JSXElementConstructor,
+  type Key,
+  type ReactElement,
+  type ReactNode,
+  type ReactPortal,
+} from "react";
 import { useCart } from "../context/CartContext";
 
 const CartPage = () => {
@@ -8,7 +15,10 @@ const CartPage = () => {
     fetchCart();
   }, []);
 
-  const total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
+  const total = items.reduce(
+    (sum: number, i: { price: number; qty: number }) => sum + i.price * i.qty,
+    0,
+  );
 
   return (
     <div>
@@ -18,11 +28,87 @@ const CartPage = () => {
       ) : (
         <>
           <ul>
-            {items.map((i) => (
-              <li key={i.product_id}>
-                {i.title} — ${i.price} × {i.qty}
-              </li>
-            ))}
+            {items.map(
+              (i: {
+                product_id: Key | null | undefined;
+                title:
+                  | string
+                  | number
+                  | bigint
+                  | boolean
+                  | ReactElement<unknown, string | JSXElementConstructor<any>>
+                  | Iterable<ReactNode>
+                  | ReactPortal
+                  | Promise<
+                      | string
+                      | number
+                      | bigint
+                      | boolean
+                      | ReactPortal
+                      | ReactElement<
+                          unknown,
+                          string | JSXElementConstructor<any>
+                        >
+                      | Iterable<ReactNode>
+                      | null
+                      | undefined
+                    >
+                  | null
+                  | undefined;
+                price:
+                  | string
+                  | number
+                  | bigint
+                  | boolean
+                  | ReactElement<unknown, string | JSXElementConstructor<any>>
+                  | Iterable<ReactNode>
+                  | ReactPortal
+                  | Promise<
+                      | string
+                      | number
+                      | bigint
+                      | boolean
+                      | ReactPortal
+                      | ReactElement<
+                          unknown,
+                          string | JSXElementConstructor<any>
+                        >
+                      | Iterable<ReactNode>
+                      | null
+                      | undefined
+                    >
+                  | null
+                  | undefined;
+                qty:
+                  | string
+                  | number
+                  | bigint
+                  | boolean
+                  | ReactElement<unknown, string | JSXElementConstructor<any>>
+                  | Iterable<ReactNode>
+                  | ReactPortal
+                  | Promise<
+                      | string
+                      | number
+                      | bigint
+                      | boolean
+                      | ReactPortal
+                      | ReactElement<
+                          unknown,
+                          string | JSXElementConstructor<any>
+                        >
+                      | Iterable<ReactNode>
+                      | null
+                      | undefined
+                    >
+                  | null
+                  | undefined;
+              }) => (
+                <li key={i.product_id}>
+                  {i.title} — ${i.price} × {i.qty}
+                </li>
+              ),
+            )}
           </ul>
           <p>
             <strong>Total: ${total.toFixed(2)}</strong>

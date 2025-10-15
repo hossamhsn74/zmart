@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getCategories } from "../api/catalogApi";
-import type { Category } from "../types/Category";
+import { type Category } from "../types/Category";
 
 const CategoriesPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -31,7 +31,7 @@ const CategoriesPage = () => {
                 alignItems: "center",
               }}
             >
-              {c}
+              {c.name}
             </li>
           ))}
         </ol>

@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   createContext,
   useContext,
   useEffect,
   useState,
-  ReactNode,
+  type ReactNode,
 } from "react";
-import { addToCart, getCart, checkout } from "../api/cartApi";
+import { addToCart, getCart } from "../api/cartApi";
 import { useAuth } from "./AuthContext";
 
 export const CartContext = createContext<any>(null);
