@@ -13,7 +13,7 @@ app.get("/", (req, res) => {
   res.send("Catalog service is running");
 });
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8002;
 
 AppDataSource.initialize()
   .then(() => {

@@ -82,6 +82,8 @@ services:
 
   api-gateway:
     build: ./api-gateway
+    env_file:
+      - ./api-gateway/.env
     ports:
       - "8000:8000"
     depends_on:
@@ -115,7 +117,7 @@ services:
       [
         "bash",
         "-c",
-        "sleep 20 && uvicorn app.main:app --host 0.0.0.0 --port 8003",
+        "sleep 20 && uvicorn app.main:app --host 0.0.0.0 --port 8004",
       ]
 
   frontend:

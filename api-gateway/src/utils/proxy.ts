@@ -1,11 +1,9 @@
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { Express } from "express";
 import dotenv from "dotenv";
+
 dotenv.config();
 
-/**
- * Registers proxy routes for all downstream services.
- */
 export function setupProxies(app: Express) {
   const services = [
     { route: "/auth", target: process.env.AUTH_SERVICE_URL },
@@ -26,9 +24,10 @@ export function setupProxies(app: Express) {
       createProxyMiddleware({
         target,
         changeOrigin: true,
-        pathRewrite: (path) => path.replace(route, ""),
+        pathRewrite: { [`^${route}`]: "" },
       }),
     );
+
     console.log(`✅ Proxy registered: ${route} → ${target}`);
   });
 }
