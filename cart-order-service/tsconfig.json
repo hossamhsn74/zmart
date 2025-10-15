@@ -1,14 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "CommonJS",
+    "target": "es2019",
+    "module": "commonjs",
     "rootDir": "src",
     "outDir": "dist",
-    "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true, // ✅ required
+    "experimentalDecorators": true, // ✅ required
+    "strict": true,
+    "skipLibCheck": true
   }
 }

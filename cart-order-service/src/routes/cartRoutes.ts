@@ -1,10 +1,10 @@
-import express from "express";
-import { addToCart, getCart, checkout } from "../controllers/cartController";
+import { Router } from "express";
+import { getCart, addToCart, checkout } from "../controllers/cartController";
 
-const router = express.Router();
+const router = Router();
 
-router.post("/cart/items", addToCart);
 router.get("/cart", getCart);
+router.post("/cart/items", addToCart);
 router.post("/checkout", checkout);
 
 export default router;

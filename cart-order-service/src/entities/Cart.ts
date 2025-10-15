@@ -4,14 +4,14 @@ import { CartItem } from "./CartItem";
 @Entity()
 export class Cart {
   @PrimaryGeneratedColumn("uuid")
-  id: string | undefined;
+  id!: string;
 
-  @Column({ type: "varchar", nullable: true })
-  user_id: string | undefined;
+  @Column({ nullable: true })
+  user_id?: string;
 
-  @Column({ type: "varchar", nullable: true })
-  session_id: string | undefined;
+  @Column({ nullable: true })
+  session_id?: string;
 
   @OneToMany(() => CartItem, (item) => item.cart, { cascade: true })
-  items: CartItem[] | undefined;
+  items!: CartItem[];
 }

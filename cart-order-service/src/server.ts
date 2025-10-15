@@ -1,13 +1,12 @@
-import { AppDataSource } from "./config/db";
+import { AppDataSource } from "./data-source";
 import app from "./app";
-
-const PORT = process.env.PORT || 8002;
+import "reflect-metadata";
 
 AppDataSource.initialize()
   .then(() => {
     console.log("✅ Database connected");
-    app.listen(PORT, () =>
-      console.log(`🚀 Cart & Order service running on port ${PORT}`),
+    app.listen(8003, () =>
+      console.log("🚀 Cart-Order Service running on port 8003"),
     );
   })
   .catch((err) => console.error("❌ DB connection error:", err));
