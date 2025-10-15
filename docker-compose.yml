@@ -91,10 +91,20 @@ services:
       - recommendation-service
   catalog-service:
     build: ./catalog-service
+    env_file:
+      - ./catalog-service/.env
+    depends_on:
+      postgresql:
+        condition: service_healthy
   auth-service:
     build: ./auth-service
   cart-service:
     build: ./cart-order-service
+    env_file:
+      - ./cart-order-service/.env
+    depends_on:
+      postgresql:
+        condition: service_healthy
   recommendation-service:
     build: ./recommendation-service
     depends_on:
