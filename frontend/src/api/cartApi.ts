@@ -13,7 +13,7 @@ export const addToCart = async (payload: any) => {
   return data;
 };
 
-export const checkout = async (payload: any) => {
+export const checkoutApi = async (payload: any) => {
   const { data } = await api.post("/cart/checkout", payload);
   return data;
 };

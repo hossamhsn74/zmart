@@ -3,6 +3,7 @@ import { AppDataSource } from "../data-source";
 import { Cart } from "../entities/Cart";
 import { CartItem } from "../entities/CartItem";
 import { Product } from "../entities/Product";
+import { Order } from "../entities/Order";
 
 const cartRepo = AppDataSource.getRepository(Cart);
 const cartItemRepo = AppDataSource.getRepository(CartItem);
@@ -134,25 +135,76 @@ export const addToCart = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+const orderRepo = AppDataSource.getRepository(Order);
 
 export const checkout = async (req: Request, res: Response) => {
-  const { user_id, session_id } = req.body;
+  try {
+    const { user_id, session_id } = req.body;
 
-  const userIdStr = typeof user_id === "string" ? user_id : undefined;
-  const sessionIdStr = typeof session_id === "string" ? session_id : undefined;
+    const where: any = user_id ? { user_id } : { session_id };
+    const cart = await cartRepo.findOne({
+      where,
+      relations: ["items"],
+    });
 
-  const where: any = userIdStr
-    ? { user_id: userIdStr }
-    : { session_id: sessionIdStr };
+    if (!cart || cart.items.length === 0)
+      return res.status(400).json({ message: "Cart is empty." });
 
-  const cart = await cartRepo.findOne({
-    where,
-    relations: ["items"],
-  });
+    // ✅ Check stock
+    for (const item of cart.items) {
+      const product = await productRepo.findOneBy({ id: item.product_id });
+      if (!product) {
+        return res
+          .status(400)
+          .json({ message: `Product ${item.product_id} not found.` });
+      }
+      if (product.stock < item.qty) {
+        return res
+          .status(400)
+          .json({ message: `Insufficient stock for ${product.title}` });
+      }
+    }
 
-  if (!cart) return res.status(404).json({ message: "Cart not found" });
+    // ✅ Deduct stock and create order
+    const order = orderRepo.create({
+      user_id: user_id || null,
+      session_id: session_id || null,
+      total: 0,
+      status: "PAID",
+    });
+    await orderRepo.save(order);
 
-  const total = cart.items.reduce((sum, i) => sum + Number(i.price) * i.qty, 0);
-  await cartRepo.remove(cart);
-  return res.json({ message: "Checkout complete", total });
+    let total = 0;
+    for (const item of cart.items) {
+      const product = await productRepo.findOneBy({ id: item.product_id });
+      if (product) {
+        product.stock -= item.qty;
+        await productRepo.save(product);
+
+        const orderItem = new OrderItem();
+        orderItem.order = order;
+        orderItem.product_id = item.product_id;
+        orderItem.qty = item.qty;
+        orderItem.price = item.price;
+        total += item.price * item.qty;
+
+        await AppDataSource.getRepository(OrderItem).save(orderItem);
+      }
+    }
+
+    order.total = total;
+    await orderRepo.save(order);
+
+    // ✅ Remove cart
+    await cartRepo.remove(cart);
+
+    return res.json({
+      message: "Checkout complete",
+      total,
+      order_id: order.id,
+    });
+  } catch (err) {
+    console.error("Checkout error:", err);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
 };

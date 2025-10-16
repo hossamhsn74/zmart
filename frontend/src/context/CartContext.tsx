@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { addToCart, getCart } from "../api/cartApi";
+import { addToCart, checkoutApi, getCart } from "../api/cartApi";
 import { useAuth } from "./AuthContext";
 
 export const CartContext = createContext<any>(null);
@@ -17,7 +17,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState([]);
   const [cartCount, setCartCount] = useState(0);
 
-  // ✅ Create or get session ID
+  // In CartContext.tsx
   useEffect(() => {
     let sid = localStorage.getItem("session_id");
     if (!sid) {
@@ -26,6 +26,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
     setSessionId(sid);
   }, []);
+
+  useEffect(() => {
+    if (user || sessionId) fetchCart();
+  }, [user, sessionId]);
 
   const fetchCart = async () => {
     try {
@@ -54,13 +58,26 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     await fetchCart();
   };
 
+  const checkout = async () => {
+    try {
+      const payload = user ? { user_id: user.id } : { session_id: sessionId };
+      const res = await checkoutApi(payload);
+      return res;
+      await fetchCart(); // refresh empty cart
+    } catch (err: any) {
+      return err.response?.data?.message || "Checkout failed";
+    }
+  };
+
   useEffect(() => {
     const count = items.reduce((sum, i: any) => sum + i.qty, 0);
     setCartCount(count);
   }, [items]);
 
   return (
-    <CartContext.Provider value={{ items, cartCount, fetchCart, addItem }}>
+    <CartContext.Provider
+      value={{ items, cartCount, fetchCart, addItem, checkout }}
+    >
       {children}
     </CartContext.Provider>
   );

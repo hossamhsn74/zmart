@@ -1,17 +1,36 @@
 import api from "./axiosClient";
 import type { Product } from "../types/Product";
-// import type { Category } from "../types/Category";
 
-export const getProducts = async (): Promise<Product[]> => {
-  const { data } = await api.get("/products/list/");
-  console.log("Fetched products:", data);
-  // Backend returns a paginated shape: { total, page, limit, results }
-  if (data && typeof data === "object" && Array.isArray(data.results)) {
-    return data.results as Product[];
+export const getProducts = async (
+  page: number = 1,
+  limit: number = 2,
+): Promise<{
+  total: number;
+  page: number;
+  limit: number;
+  results: Product[];
+}> => {
+  const { data } = await api.get(`/products/list/?page=${page}&limit=${limit}`);
+
+  console.log(`Fetched products page ${page}:`, data);
+
+  // ✅ Validate backend response structure
+  if (
+    data &&
+    typeof data === "object" &&
+    Array.isArray(data.results) &&
+    typeof data.total === "number"
+  ) {
+    return data;
   }
 
-  // Fallback: assume the API returned an array of products directly
-  return data as Product[];
+  // ⚙️ Fallback: wrap a raw array response
+  return {
+    total: Array.isArray(data) ? data.length : 0,
+    page,
+    limit,
+    results: Array.isArray(data) ? data : [],
+  };
 };
 
 export const getProductById = async (id: string): Promise<Product> => {
@@ -20,9 +39,3 @@ export const getProductById = async (id: string): Promise<Product> => {
 
   return data;
 };
-
-// export const getCategories = async (): Promise<Category[]> => {
-//     const { data } = await api.get("/products/categories/list");
-//     console.log("Fetched categories:", data);
-//     return data;
-// };

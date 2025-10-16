@@ -1,121 +1,74 @@
-import {
-  useEffect,
-  type JSXElementConstructor,
-  type Key,
-  type ReactElement,
-  type ReactNode,
-  type ReactPortal,
-} from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import CartItem from "../components/CartItem";
 
 const CartPage = () => {
   const { items, fetchCart, checkout } = useCart();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
+  // ✅ Load cart on mount
   useEffect(() => {
     fetchCart();
   }, []);
 
-  const total = items.reduce(
-    (sum: number, i: { price: number; qty: number }) => sum + i.price * i.qty,
-    0,
-  );
+  const total =
+    items?.reduce((sum: number, i: any) => sum + i.subtotal, 0) || 0;
+
+  // ✅ Checkout with login enforcement
+  const handleCheckout = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await checkout();
+      setMessage(`✅ ${res.message}. Total: $${res.total.toFixed(2)}`);
+      await fetchCart(); // refresh cart
+
+      // Wait a moment before redirect
+      setTimeout(() => navigate("/products"), 3000);
+    } catch (err: any) {
+      setMessage(`❌ ${err.response?.data?.message || "Checkout failed"}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!items || items.length === 0) {
+    return <p className="cart-empty">Your cart is empty.</p>;
+  }
 
   return (
-    <div>
-      <h2>Your Cart</h2>
-      {items.length === 0 ? (
-        <p>No items in cart.</p>
-      ) : (
-        <>
-          <ul>
-            {items.map(
-              (i: {
-                product_id: Key | null | undefined;
-                title:
-                  | string
-                  | number
-                  | bigint
-                  | boolean
-                  | ReactElement<unknown, string | JSXElementConstructor<any>>
-                  | Iterable<ReactNode>
-                  | ReactPortal
-                  | Promise<
-                      | string
-                      | number
-                      | bigint
-                      | boolean
-                      | ReactPortal
-                      | ReactElement<
-                          unknown,
-                          string | JSXElementConstructor<any>
-                        >
-                      | Iterable<ReactNode>
-                      | null
-                      | undefined
-                    >
-                  | null
-                  | undefined;
-                price:
-                  | string
-                  | number
-                  | bigint
-                  | boolean
-                  | ReactElement<unknown, string | JSXElementConstructor<any>>
-                  | Iterable<ReactNode>
-                  | ReactPortal
-                  | Promise<
-                      | string
-                      | number
-                      | bigint
-                      | boolean
-                      | ReactPortal
-                      | ReactElement<
-                          unknown,
-                          string | JSXElementConstructor<any>
-                        >
-                      | Iterable<ReactNode>
-                      | null
-                      | undefined
-                    >
-                  | null
-                  | undefined;
-                qty:
-                  | string
-                  | number
-                  | bigint
-                  | boolean
-                  | ReactElement<unknown, string | JSXElementConstructor<any>>
-                  | Iterable<ReactNode>
-                  | ReactPortal
-                  | Promise<
-                      | string
-                      | number
-                      | bigint
-                      | boolean
-                      | ReactPortal
-                      | ReactElement<
-                          unknown,
-                          string | JSXElementConstructor<any>
-                        >
-                      | Iterable<ReactNode>
-                      | null
-                      | undefined
-                    >
-                  | null
-                  | undefined;
-              }) => (
-                <li key={i.product_id}>
-                  {i.title} — ${i.price} × {i.qty}
-                </li>
-              ),
-            )}
-          </ul>
-          <p>
-            <strong>Total: ${total.toFixed(2)}</strong>
-          </p>
-          <button onClick={checkout}>Checkout</button>
-        </>
-      )}
+    <div className="cart-container">
+      <h2 className="cart-title">Your Cart</h2>
+
+      <ul className="cart-list">
+        {items.map((item: any) => (
+          <CartItem key={item.id} {...item} />
+        ))}
+      </ul>
+
+      <div className="cart-total">
+        <span>Total:</span>
+        <span>${total.toFixed(2)}</span>
+      </div>
+
+      {message && <p className="cart-message">{message}</p>}
+
+      <button
+        onClick={handleCheckout}
+        disabled={loading}
+        className="cart-checkout-btn"
+      >
+        {loading ? "Processing..." : "Checkout"}
+      </button>
     </div>
   );
 };

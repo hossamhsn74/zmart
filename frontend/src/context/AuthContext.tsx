@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
 
 interface User {
   id: string;
@@ -21,16 +27,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.getItem("accessToken"),
   );
 
+  // ✅ Load user from localStorage on app start
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("accessToken");
+
+    if (storedUser && storedToken) {
+      try {
+        const parsedUser: User = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setToken(storedToken);
+      } catch (err) {
+        console.error("Invalid user data in localStorage:", err);
+        localStorage.removeItem("user");
+        localStorage.removeItem("accessToken");
+      }
+    }
+  }, []);
+
+  // ✅ Login (store both token + user)
   const loginUser = (token: string, user: User) => {
     setUser(user);
     setToken(token);
     localStorage.setItem("accessToken", token);
+    localStorage.setItem("user", JSON.stringify(user));
   };
 
+  // ✅ Logout (clear both)
   const logoutUser = () => {
     setUser(null);
     setToken(null);
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
   };
 
   return (
@@ -40,9 +68,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
+// ✅ Custom hook
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
   return context;
 };
