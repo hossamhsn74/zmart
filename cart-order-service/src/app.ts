@@ -5,6 +5,9 @@ import cartRoutes from "./routes/cartRoutes";
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use("/api", cartRoutes);
+app.use("/", cartRoutes);
 
+app.get("/", (req, res) => {
+  res.send("Cart service is running");
+});
 export default app;

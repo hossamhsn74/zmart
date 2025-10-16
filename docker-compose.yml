@@ -80,17 +80,6 @@ services:
       timeout: 5s
       retries: 5
 
-  api-gateway:
-    build: ./api-gateway
-    env_file:
-      - ./api-gateway/.env
-    ports:
-      - "8000:8000"
-    depends_on:
-      - catalog-service
-      - auth-service
-      - cart-service
-      - recommendation-service
   catalog-service:
     build: ./catalog-service
     env_file:
@@ -98,8 +87,25 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.catalog.rule=PathPrefix(`/api/v1/products`)"
+      - "traefik.http.middlewares.catalog-strip.stripprefix.prefixes=/api/v1/products"
+      - "traefik.http.routers.catalog.middlewares=catalog-strip"
+      - "traefik.http.services.catalog.loadbalancer.server.port=8002"
+
   auth-service:
     build: ./auth-service
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=PathPrefix(`/api/v1/auth`)"
+      - "traefik.http.middlewares.auth-strip.stripprefix.prefixes=/api/v1/auth"
+      - "traefik.http.routers.auth.middlewares=auth-strip"
+      - "traefik.http.services.auth.loadbalancer.server.port=8001"
+
   cart-service:
     build: ./cart-order-service
     env_file:
@@ -107,6 +113,13 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cart.rule=PathPrefix(`/api/v1/cart`)"
+      - "traefik.http.middlewares.cart-strip.stripprefix.prefixes=/api/v1/cart"
+      - "traefik.http.routers.cart.middlewares=cart-strip"
+      - "traefik.http.services.cart.loadbalancer.server.port=8003"
+
   recommendation-service:
     build: ./recommendation-service
     depends_on:
@@ -119,6 +132,25 @@ services:
         "-c",
         "sleep 20 && uvicorn app.main:app --host 0.0.0.0 --port 8004",
       ]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.recommend.rule=PathPrefix(`/api/v1/recommendations`)"
+      - "traefik.http.middlewares.recommend-strip.stripprefix.prefixes=/api/v1/recommendations"
+      - "traefik.http.routers.recommend.middlewares=recommend-strip"
+      - "traefik.http.services.recommend.loadbalancer.server.port=8004"
+
+  traefik:
+    image: traefik:v3.0
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--api.dashboard=true" # 👈 enables the dashboard
+      - "--api.insecure=true" # 👈 exposes it at :8080 for local use
+    ports:
+      - "80:80"
+      - "8080:8080" # 👈 open this for the dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
   frontend:
     build: ./frontend
