@@ -28,26 +28,26 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
-@router.post("/login", response_model=Token)
+@router.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
-    """
-    Authenticate user by email & password.
-    Returns a JWT access token if credentials are valid.
-    """
-    # 1️⃣ Find the user
     db_user = db.query(User).filter(User.email == user.email).first()
     if not db_user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
         )
 
-    # 3️⃣ Create JWT token
     token_payload = {
         "sub": str(db_user.user_id),
         "email": db_user.email,
-        # "iat": datetime.utcnow(),  # issued at
     }
     access_token = create_access_token(token_payload)
 
-    # 4️⃣ Return token
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "accessToken": access_token,
+        "user": {
+            "id": str(db_user.user_id),
+            "name": db_user.name,  # make sure this field exists in your User model
+            "email": db_user.email,
+        },
+    }

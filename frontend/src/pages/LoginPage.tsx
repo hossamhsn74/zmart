@@ -26,7 +26,7 @@ const LoginPage = () => {
 
       // Expected backend response shape:
       // { accessToken: string, user: { id, name, email } }
-      if (!res.accessToken || !res.name) {
+      if (!res.accessToken || !res.user) {
         throw new Error("Invalid response format from server");
       }
 
