@@ -5,7 +5,7 @@ import { useCart } from "./context/CartContext";
 import { useAuth } from "./context/AuthContext";
 
 import ProductsPage from "./pages/ProductsPage";
-import CategoriesPage from "./pages/CategoriesPage";
+// import CategoriesPage from "./pages/CategoriesPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CartPage from "./pages/CartPage";
 import LoginPage from "./pages/LoginPage";
@@ -50,7 +50,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<ProductsPage />} />
-        <Route path="/categories" element={<CategoriesPage />} />
+        {/* <Route path="/categories" element={<CategoriesPage />} /> */}
         <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/login" element={<LoginPage />} />

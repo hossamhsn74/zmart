@@ -35,6 +35,6 @@ app = FastAPI(title="Recommendation Service", lifespan=lifespan)
 app.include_router(recommendation_routes.router)
 
 
-@app.get("/")
+@app.get("/health")
 def root():
     return {"message": "Recommendation Service Running ✅"}

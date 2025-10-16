@@ -28,6 +28,6 @@ app.add_middleware(
 app.include_router(router)
 
 
-@app.get("/")
+@app.get("/health")
 def root():
     return {"message": "Auth Service Running ✅"}

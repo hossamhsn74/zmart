@@ -2,6 +2,7 @@ import { AppDataSource } from "./data-source";
 import express from "express";
 import cors from "cors";
 import productRoutes from "./routes/productRoutes";
+import { getCategories } from "./controllers/productController";
 
 const app = express();
 
@@ -9,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/", productRoutes);
 
-app.get("/", (req, res) => {
+app.get("/health", (req, res) => {
   res.send("Catalog service is running");
 });
 

@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/", cartRoutes);
 
-app.get("/", (req, res) => {
+app.get("/health", (req, res) => {
   res.send("Cart service is running");
 });
 export default app;

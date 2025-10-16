@@ -5,7 +5,7 @@ from .models import User
 from .schemas import UserCreate, UserLogin, UserResponse, Token
 from .utils import create_access_token
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter(tags=["Auth"])
 
 
 # Register endpoint

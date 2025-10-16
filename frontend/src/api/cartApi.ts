@@ -4,7 +4,7 @@ export const getCart = async (params: {
   user_id?: string;
   session_id?: string;
 }) => {
-  const { data } = await api.get("/cart", { params });
+  const { data } = await api.get("/cart/get", { params });
   return data;
 };
 
@@ -14,6 +14,6 @@ export const addToCart = async (payload: any) => {
 };
 
 export const checkout = async (payload: any) => {
-  const { data } = await api.post("/checkout", payload);
+  const { data } = await api.post("/cart/checkout", payload);
   return data;
 };
