@@ -56,7 +56,8 @@ const ProductDetailPage = () => {
           <p>
             <strong>Stock:</strong> {product.stock}
           </p>
-          {product.tags?.length > 0 && (
+
+          {product.tags && product.tags?.length > 0 && (
             <p>
               <strong>Tags:</strong> {product.tags.join(", ")}
             </p>
