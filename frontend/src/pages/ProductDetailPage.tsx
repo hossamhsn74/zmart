@@ -3,34 +3,51 @@ import { useParams } from "react-router-dom";
 import type { Product } from "../types/Product";
 import { useCart } from "../context/CartContext";
 import { FaCartPlus } from "react-icons/fa";
+import { useTelemetry } from "../hooks/useTelemetry";
+import { getProductByIdApi } from "../api/catalogApi";
+import { getRecommendationApi } from "../api/recommendationsApi";
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
+  const [recommendations, setRecommendations] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const { addItem } = useCart();
+  const { sendEvent } = useTelemetry();
 
   useEffect(() => {
     if (!id) return;
-    // Try to read products list from localStorage (saved by ProductsPage)
-    try {
-      const raw = localStorage.getItem("products_list");
-      if (raw) {
-        const products: Product[] = JSON.parse(raw);
-        const p = products.find((x) => x.product_id === id);
-        if (p) {
-          setProduct(p);
-          return;
-        }
-      }
-    } catch (err) {
-      // fallthrough to not found
-      console.error("Error reading products from storage:", err);
-    }
 
-    setProduct(null);
+    const loadProductAndRecommendations = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // 🧩 1. Fetch product details from backend
+        const prod = await getProductByIdApi(id);
+        setProduct(prod);
+
+        // 🧩 2. Send telemetry event
+        await sendEvent("product_viewed", { product_id: id });
+
+        // 🧩 3. Fetch recommendations
+        const rec = await getRecommendationApi(id);
+        setRecommendations(rec.related_products || []);
+      } catch (err: any) {
+        console.error("Failed to load product details:", err);
+        setError("Could not load product details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProductAndRecommendations();
   }, [id]);
 
-  if (product === null) return <p>Loading / product not found...</p>;
+  if (loading) return <p>Loading product details...</p>;
+  if (error) return <p>{error}</p>;
+  if (!product) return <p>Product not found.</p>;
 
   return (
     <div className="product-detail">
@@ -42,6 +59,7 @@ const ProductDetailPage = () => {
             className="product-detail-image"
           />
         )}
+
         <div className="product-detail-info">
           <h2 className="product-detail-title">{product.title}</h2>
           <p>
@@ -57,7 +75,7 @@ const ProductDetailPage = () => {
             <strong>Stock:</strong> {product.stock}
           </p>
 
-          {product.tags && product.tags?.length > 0 && (
+          {product.tags && product.tags.length > 0 && (
             <p>
               <strong>Tags:</strong> {product.tags.join(", ")}
             </p>
@@ -72,18 +90,19 @@ const ProductDetailPage = () => {
         </div>
       </div>
 
-      {/* {product.attributes && (
-                <section className="product-extra-section">
-                    <h3>Extra Info</h3>
-                    <ul>
-                        {Object.entries(product.attributes).map(([key, value]) => (
-                            <li key={key}>
-                                <strong>{key}</strong>: {String(value)}
-                            </li>
-                        ))}
-                    </ul>
-                </section>
-            )} */}
+      {/* 🧩 Recommendations Section */}
+      <div className="product-recommendations">
+        <h3>Frequently Bought Together</h3>
+        {recommendations.length > 0 ? (
+          <ul>
+            {recommendations.map((r) => (
+              <li key={r}>{r}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>No related products found.</p>
+        )}
+      </div>
     </div>
   );
 };

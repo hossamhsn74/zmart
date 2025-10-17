@@ -19,7 +19,6 @@ const ProductsPage = () => {
       // Expect response like { total, page, limit, results }
       setProducts(data.results);
       setTotalPages(Math.ceil(data.total / data.limit));
-      localStorage.setItem("products_list", JSON.stringify(data.results));
     } catch (err) {
       console.error("Error fetching products:", err);
     } finally {

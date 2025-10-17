@@ -2,7 +2,6 @@ import { AppDataSource } from "./data-source";
 import express from "express";
 import cors from "cors";
 import productRoutes from "./routes/productRoutes";
-import { getCategories } from "./controllers/productController";
 
 const app = express();
 

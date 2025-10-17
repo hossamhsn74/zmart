@@ -1,20 +1,23 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { OrderItem } from "./OrderItem";
 
-@Entity()
+@Entity({ name: "orders" }) // ✅ avoid reserved word
 export class Order {
   @PrimaryGeneratedColumn("uuid")
-  id: string | undefined;
+  id!: string;
 
-  @Column("varchar")
-  user_id: string | undefined;
+  @Column({ nullable: true })
+  user_id!: string;
 
-  @Column("varchar")
-  status: string | undefined; // e.g. 'PAID', 'PENDING'
+  @Column({ nullable: true })
+  session_id!: string;
+
+  @Column("decimal", { precision: 10, scale: 2, default: 0 })
+  total!: number;
+
+  @Column({ default: "PENDING" })
+  status!: string;
 
   @OneToMany(() => OrderItem, (item) => item.order, { cascade: true })
-  items: OrderItem[] | undefined;
-
-  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
-  created_at: Date | undefined;
+  items!: OrderItem[];
 }

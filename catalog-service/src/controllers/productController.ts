@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { Product } from "../entity/Product";
 import { ILike } from "typeorm";
+import { validate as isUuid } from "uuid";
 
 const productRepo = AppDataSource.getRepository(Product);
 
@@ -30,19 +31,17 @@ export const getProducts = async (req: Request, res: Response) => {
   });
 };
 
-// GET /products/:id
 export const getProductById = async (req: Request, res: Response) => {
-  const product = await productRepo.findOneBy({ product_id: req.params.id });
-  if (!product) return res.status(404).json({ message: "Product not found" });
+  const { id } = req.params;
+
+  if (!isUuid(id)) {
+    return res.status(400).json({ message: "Invalid product ID format" });
+  }
+
+  const product = await productRepo.findOneBy({ product_id: id });
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
   res.json(product);
-};
-
-// GET /categories
-export const getCategories = async (req: Request, res: Response) => {
-  const categories = await productRepo
-    .createQueryBuilder("product")
-    .select("DISTINCT product.category", "category")
-    .getRawMany();
-
-  res.json(categories.map((c) => c.category));
 };

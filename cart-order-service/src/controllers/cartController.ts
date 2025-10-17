@@ -4,9 +4,12 @@ import { Cart } from "../entities/Cart";
 import { CartItem } from "../entities/CartItem";
 import { Product } from "../entities/Product";
 import { Order } from "../entities/Order";
+import { OrderItem } from "../entities/OrderItem"; // ✅ Added
 
 const cartRepo = AppDataSource.getRepository(Cart);
 const cartItemRepo = AppDataSource.getRepository(CartItem);
+const productRepo = AppDataSource.getRepository(Product);
+const orderRepo = AppDataSource.getRepository(Order);
 
 export const getCart = async (req: Request, res: Response) => {
   try {
@@ -38,7 +41,6 @@ export const getCart = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Cart is empty" });
     }
 
-    // 🧾 Build response
     const items = cart.items.map((i) => ({
       id: i.id,
       title: i.title,
@@ -60,13 +62,10 @@ export const getCart = async (req: Request, res: Response) => {
   }
 };
 
-const productRepo = AppDataSource.getRepository(Product);
-
 export const addToCart = async (req: Request, res: Response) => {
   try {
     const { user_id, session_id, product_id, qty } = req.body;
 
-    // 🧱 1. Validate input
     if (!product_id)
       return res.status(400).json({ message: "Product ID is required." });
     if (!qty || qty <= 0)
@@ -78,31 +77,30 @@ export const addToCart = async (req: Request, res: Response) => {
         .status(400)
         .json({ message: "Either user_id or session_id is required." });
 
-    // 🧩 2. Fetch product info from DB (shared catalog table)
+    // ✅ Use correct property (product_id)
     const product = await productRepo.findOne({
-      where: { product_id: product_id },
+      where: { product_id },
     });
+
     if (!product) {
       return res.status(404).json({ message: "Product not found." });
     }
 
-    // 🧩 3. Find or create cart
     const where = user_id ? { user_id } : { session_id };
     let cart = await cartRepo.findOne({ where, relations: ["items"] });
+
     if (!cart) {
       cart = cartRepo.create(where);
       await cartRepo.save(cart);
       cart.items = [];
     }
 
-    // 🧠 4. Check if product already in cart
     let existingItem = cart.items.find((i) => i.product_id === product_id);
 
     if (existingItem) {
       existingItem.qty += qty;
       await cartItemRepo.save(existingItem);
     } else {
-      // 🧾 Store snapshot of product title & price
       const newItem = cartItemRepo.create({
         product_id,
         title: product.title,
@@ -114,7 +112,6 @@ export const addToCart = async (req: Request, res: Response) => {
       cart.items.push(newItem);
     }
 
-    // 🧮 5. Prepare clean response
     const items = cart.items.map((i) => ({
       id: i.id,
       title: i.title,
@@ -135,7 +132,6 @@ export const addToCart = async (req: Request, res: Response) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
-const orderRepo = AppDataSource.getRepository(Order);
 
 export const checkout = async (req: Request, res: Response) => {
   try {
@@ -152,7 +148,9 @@ export const checkout = async (req: Request, res: Response) => {
 
     // ✅ Check stock
     for (const item of cart.items) {
-      const product = await productRepo.findOneBy({ id: item.product_id });
+      const product = await productRepo.findOneBy({
+        product_id: item.product_id,
+      }); // ✅ fixed
       if (!product) {
         return res
           .status(400)
@@ -166,7 +164,7 @@ export const checkout = async (req: Request, res: Response) => {
     }
 
     // ✅ Deduct stock and create order
-    const order = orderRepo.create({
+    const order: Order = orderRepo.create({
       user_id: user_id || null,
       session_id: session_id || null,
       total: 0,
@@ -176,12 +174,14 @@ export const checkout = async (req: Request, res: Response) => {
 
     let total = 0;
     for (const item of cart.items) {
-      const product = await productRepo.findOneBy({ id: item.product_id });
+      const product = await productRepo.findOneBy({
+        product_id: item.product_id,
+      }); // ✅ fixed
       if (product) {
         product.stock -= item.qty;
         await productRepo.save(product);
 
-        const orderItem = new OrderItem();
+        const orderItem = new OrderItem(); // ✅ imported
         orderItem.order = order;
         orderItem.product_id = item.product_id;
         orderItem.qty = item.qty;

@@ -10,7 +10,9 @@ export const getProducts = async (
   limit: number;
   results: Product[];
 }> => {
-  const { data } = await api.get(`/products/list/?page=${page}&limit=${limit}`);
+  const { data } = await api.get(
+    `/products/products/?page=${page}&limit=${limit}`,
+  );
 
   console.log(`Fetched products page ${page}:`, data);
 
@@ -33,9 +35,7 @@ export const getProducts = async (
   };
 };
 
-export const getProductById = async (id: string): Promise<Product> => {
-  const { data } = await api.get(`/products/${id}`);
-  console.log(`Fetched product with id ${id}:`, data);
-
+export const getProductByIdApi = async (id: string): Promise<Product> => {
+  const { data } = await api.get(`/products/products/${id}`);
   return data;
 };

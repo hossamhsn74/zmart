@@ -63,6 +63,17 @@ services:
       test: ["CMD-SHELL", "curl -f http://localhost:5601 || exit 1"]
       interval: 10s
       retries: 5
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   postgresql:
     image: postgres:16.8-alpine3.20
@@ -123,9 +134,17 @@ services:
   recommendation-service:
     build: ./recommendation-service
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC_ORDER_COMPLETED: order.completed
+      KAFKA_TOPIC_CART: cart_events
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTIC_USER: elastic
+      ELASTIC_PASS: changeme
+      REDIS_HOST: redis
+      PYTHONUNBUFFERED: 1
     command:
       [
         "bash",

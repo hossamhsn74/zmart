@@ -3,15 +3,18 @@ import { Order } from "./Order";
 
 @Entity()
 export class OrderItem {
-  @PrimaryGeneratedColumn("uuid")
-  id: string | undefined;
-
-  @Column({ type: "varchar" })
-  product_id: string | undefined;
-
-  @Column("int")
-  qty: number | undefined;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   @ManyToOne(() => Order, (order) => order.items)
-  order: Order | undefined;
+  order!: Order;
+
+  @Column()
+  product_id!: string;
+
+  @Column()
+  qty!: number;
+
+  @Column({ type: "decimal" })
+  price!: number;
 }
